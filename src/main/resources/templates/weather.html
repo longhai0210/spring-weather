@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Card</title>
+  <style>
+    .weather-card {
+      width: 300px;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+    .weather-card h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+    .weather-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .weather-main img {
+      width: 60px;
+    }
+    .weather-details {
+      margin-top: 15px;
+    }
+    .weather-details p {
+      margin: 5px 0;
+    }
+    .temp {
+      font-size: 32px;
+      font-weight: bold;
+    }
+    .description {
+      font-size: 18px;
+      text-transform: capitalize;
+    }
+  </style>
+</head>
+<body>
+
+<div class="weather-card" id="weatherCard">
+  <h2 id="city">City Name</h2>
+  <div class="weather-main">
+    <img id="icon" src="" alt="Weather Icon">
+    <div>
+      <p class="temp" id="temperature">--°C</p>
+      <p class="description" id="description">--</p>
+    </div>
+  </div>
+  <div class="weather-details">
+    <p>Humidity: <span id="humidity">--%</span></p>
+    <p>Wind Speed: <span id="windSpeed">-- m/s</span></p>
+    <p>Pressure: <span id="pressure">-- hPa</span></p>
+  </div>
+</div>
+
+<script>
+  async function fetchWeather() {
+    const apiKey = 'e62a18efb1df637a7eb518e31fc7fe38';
+    const city = 'Ho Chi Minh City';  // Replace with dynamic value if needed
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=vi`;
+
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      // Populate the weather card with data
+      document.getElementById('city').textContent = data.name;
+      document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
+      document.getElementById('description').textContent = data.weather[0].description;
+      document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+      document.getElementById('windSpeed').textContent = `${data.wind.speed} m/s`;
+      document.getElementById('pressure').textContent = `${data.main.pressure} hPa`;
+      document.getElementById('icon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  }
+
+  // Call the function to fetch and display weather data
+  fetchWeather();
+</script>
+
+</body>
+</html>

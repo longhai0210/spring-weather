@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="~{fragments/v2/header :: header (pageTitle='Daily')}"></th:block>
+</head>
+
+<body class="bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 h-dvh">
+
+    <th:block th:replace="~{fragments/v2/header :: nav (selected = 'Daily')}"></th:block>
+
+        <div class="flex flex-col items-center justify-center w-screen text-gray-700 p-10">
+            <!-- Component Start -->
+            <div id="weather-card" class="w-full flex justify-center">
+                <div class="text-3xl font-bold capitalize text-white drop-shadow-lg">Nhập địa điểm để tra cứu!</div>
+            </div>
+            <div id="weather-in-week" class="w-full flex justify-center">
+
+            </div>
+
+            <!-- Component End  -->
+
+        </div>
+
+    <script>
+        let dataObj = {};
+        let selected = "";
+        function analyzeWeather(data) {
+            const weatherCount = {};
+
+            data.forEach(hour => {
+                const weatherCondition = hour.weather[0].main; // Lấy trạng thái thời tiết chính
+                weatherCount[weatherCondition] = (weatherCount[weatherCondition] || 0) + 1; // Đếm số giờ cho mỗi trạng thái
+            });
+
+            // Tìm trạng thái thời tiết chiếm ưu thế
+            const dominantWeather = Object.keys(weatherCount).reduce((a, b) => weatherCount[a] > weatherCount[b] ? a : b);
+
+            return {
+                dominantWeather,
+                weatherCount,
+            };
+        }
+        function parseObject(data) {
+            data.list.forEach(d => {
+                let date = d.dt_txt.split(" ")[0];
+                if(dataObj[date]) {
+                    dataObj[date].push(d);
+                }
+                else {
+                    dataObj[date]= [d];
+                }
+            })
+        }
+        function avgWeather(data) {
+            const avg = {
+                temp: 0,
+                min: Infinity,
+                max: -Infinity,
+                humidity: 0
+            };
+            data.forEach(d => {
+                avg.temp += d.main.temp;
+                avg.min = Math.min(avg.min, d.main.temp);
+                avg.max = Math.max(avg.max, d.main.temp);
+                avg.humidity += d.main.humidity;
+            })
+            avg.temp /= data.length;
+            avg.humidity /= data.length;
+            return avg;
+        }
+        function renderMainCard (data, city) {
+            const { dominantWeather, weatherCount } = analyzeWeather(data);
+            console.log({ dominantWeather });
+            const avg = avgWeather(data);
+            return `
+                <div class="w-full max-w-screen-sm bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+                    <div class="flex justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-6xl font-bold">${Math.round(avg.temp)}°C</span>
+                            <span class="font-semibold mt-1 text-gray-500">${city.name}</span>
+                        </div>
+                        <img class="h-24 w-24" style="transform: scale(1.5)" src="/icons/${data[1].weather[0].icon}.svg" alt="" />
+                    </div>
+                    <div class="flex gap-6 mt-12">
+                        ${ data.reduce((a, b) => {
+                            const date = new Date(b.dt_txt.replace(" ", "T")); // Ensure it's in ISO format
+
+                            const options = {
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                hour12: true
+                            };
+
+                            const formattedTime = date.toLocaleString('en-US', options);
+                            return a + `
+                                <div class="flex flex-col items-center">
+                                    <span class="font-semibold text-lg">${Math.round(b.main.temp)}°C</span>
+                                    <img class="h-10 w-10" style="transform: scale(1.5)" src="/icons/${b.weather[0].icon}.svg" alt="" />
+                                    <span class="font-semibold mt-1 text-sm">${formattedTime.split(" ")[0]}</span>
+                                    <span class="text-xs font-semibold text-gray-400">${formattedTime.split(" ")[1]}</span>
+                                </div>
+                            `
+                        }, "")}
+                    </div>
+                </div>
+            `
+        }
+        function renderWeek (data) {
+            console.log({data});
+            return `
+                <div class="flex flex-col space-y-6 w-full max-w-screen-sm bg-white p-10 mt-10 rounded-xl ring-8 ring-white ring-opacity-40">
+                   ${ Object.entries(data).reduce((a, d) => {
+                    const date = new Date(`${d[0]}T00:00:00`); // Ensure it's in ISO format
+
+                    const options = {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short'
+                    };
+
+                    const formattedDate = date.toLocaleString('en-US', options);
+                    const avg = avgWeather(d[1])
+                    return a+ `<div class="flex justify-between items-center">
+                        <span class="font-semibold text-lg w-1/4">${formattedDate}</span>
+                        <div class="flex items-center justify-end w-1/4 pr-10">
+                            <span class="font-semibold">${Math.round(avg.humidity)}%</span>
+                            <svg class="w-6 h-6 fill-current ml-1" viewBox="0 0 16 20" version="1.1"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <g transform="matrix(1,0,0,1,-4,-2)">
+                                    <path
+                                            d="M17.66,8L12.71,3.06C12.32,2.67 11.69,2.67 11.3,3.06L6.34,8C4.78,9.56 4,11.64 4,13.64C4,15.64 4.78,17.75 6.34,19.31C7.9,20.87 9.95,21.66 12,21.66C14.05,21.66 16.1,20.87 17.66,19.31C19.22,17.75 20,15.64 20,13.64C20,11.64 19.22,9.56 17.66,8ZM6,14C6.01,12 6.62,10.73 7.76,9.6L12,5.27L16.24,9.65C17.38,10.77 17.99,12 18,14C18.016,17.296 14.96,19.809 12,19.74C9.069,19.672 5.982,17.655 6,14Z"
+                                            style="fill-rule:nonzero;" />
+                                </g>
+                            </svg>
+                        </div>
+                        <img class="h-8 w-8" style="transform: scale(1.5)" src="/icons/${d[1][0].weather[0].icon}.svg" alt="" />
+                        <span class="font-semibold text-lg w-1/4 text-right">${Math.round(avg.min)}° / ${Math.round(avg.max)}°</span>
+                    </div>`
+                }, "")
+            }
+
+                </div>
+            `
+        }
+        async function getData (location){
+            const res = await fetch(`${window.location.origin}/api/weathers?q=${location}`).then(res => res.json());
+            parseObject(res);
+            selected = Object.keys(dataObj)[0];
+
+            document.getElementById('weather-card').innerHTML = renderMainCard(dataObj[selected], res.city);
+            document.getElementById('weather-in-week').innerHTML = renderWeek(dataObj);
+        }
+
+        window.onload = () => {
+            document.querySelector("#search-location-form").addEventListener("submit", (event) => {
+                event.preventDefault();
+
+                getData(document.getElementById('Search').value);
+            });
+        }
+    </script>
+</body>
+
+</html>
