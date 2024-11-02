@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Daily</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 min-h-dvh">
+    <th:block th:replace="~{fragments/header :: nav ('Daily', ${location}, '/daily')}"></th:block>
+    <div class="flex flex-col items-center justify-center w-screen text-gray-700 p-10">
+
+        <div th:if="${location == ''}" class="text-3xl font-bold capitalize text-white drop-shadow-lg">Nhập địa điểm để tra cứu!</div>
+
+        <div th:if="${location != '' and cod == 200}" id="weather-card" class="w-full flex justify-center">
+            <div class="w-full max-w-screen-sm bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+                <div class="flex justify-between w-full">
+                        <div class="font-semibold mt-1 text-xl text-gray-500" th:text="${city.get('name')}"></div>
+                        <div class="font-semibold mt-1 text-xl text-gray-500" th:text="${date}"></div>
+                </div>
+                <div class="flex gap-7 mt-6">
+                    <div class="flex flex-col items-center py-2 border border-white" th:each="wt : ${weathers}">
+                        <span class="font-semibold text-lg"><span th:text="${wt.get('temp')}"></span>°C</span>
+                        <img class="h-10 w-10" style="transform: scale(1.5)" th:src="'/icons/'+${wt.get('icon')}+'.svg'" alt="" />
+                        <span class="font-semibold mt-1 text-sm" th:text="${wt.get('time')}"></span>
+                        <span class="text-xs font-semibold text-gray-400" th:text="${wt.get('amPm')}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:if="${location != '' and cod == 200}" id="weather-in-week" class="w-full flex justify-center">
+            <div class="flex flex-col w-full max-w-screen-sm bg-white px-5 p-10 mt-10 rounded-xl ring-8 ring-white ring-opacity-40">
+                 <a th:href="'/daily?location='+${location}+'&date='+${list.get('date')}" th:class="${list.get('date') == selectedDate ? 'flex justify-between items-center px-5 py-2 bg-cyan-400 rounded-lg cursor-pointer text-white' : 'flex justify-between items-center px-5 py-2 cursor-pointer hover:text-blue-400' }" th:each="list : ${avgWeatherList}">
+                    <span class="font-semibold text-lg w-1/4" th:text="${list.get('format_time')}"></span>
+                    <div class="flex items-center justify-end w-1/4 pr-10">
+                        <span class="font-semibold"><span th:text="${list.get('humidity')}"></span>%</span>
+                        <svg class="w-6 h-6 fill-current ml-1" viewBox="0 0 16 20" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <g transform="matrix(1,0,0,1,-4,-2)">
+                                <path d="M17.66,8L12.71,3.06C12.32,2.67 11.69,2.67 11.3,3.06L6.34,8C4.78,9.56 4,11.64 4,13.64C4,15.64 4.78,17.75 6.34,19.31C7.9,20.87 9.95,21.66 12,21.66C14.05,21.66 16.1,20.87 17.66,19.31C19.22,17.75 20,15.64 20,13.64C20,11.64 19.22,9.56 17.66,8ZM6,14C6.01,12 6.62,10.73 7.76,9.6L12,5.27L16.24,9.65C17.38,10.77 17.99,12 18,14C18.016,17.296 14.96,19.809 12,19.74C9.069,19.672 5.982,17.655 6,14Z"
+                                        style="fill-rule:nonzero;" />
+                            </g>
+                        </svg>
+                    </div>
+                    <img class="h-8 w-8" style="transform: scale(1.5)" th:src="'/icons/'+${list.get('weather')}+'.svg'" th:alt="${list.get('weather')}" />
+                     <span class="font-semibold text-lg w-1/4 text-right"><span th:text="${list.get('temp_min')}"></span>° / <span th:text="${list.get('temp_max')}"></span>°</span>
+                </a>
+            </div>
+        </div>
+        <div th:if="${location != '' and cod != 200}" role="alert" class="rounded border-s-4 border-red-500 bg-red-50 p-4">
+            <strong class="block font-medium text-red-800"> Something went wrong </strong>
+
+            <p class="mt-2 text-sm text-red-700" th:text="${cod + ' | ' + message}"></p>
+        </div>
+    </div>
+</body>
+</html>
