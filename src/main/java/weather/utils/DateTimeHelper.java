@@ -1,9 +1,6 @@
 package weather.utils;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeHelper {
@@ -30,5 +27,13 @@ public class DateTimeHelper {
         String formattedDate = date.format(outputFormatter);
 
         return formattedDate;
+    }
+
+    public static int sort(String d1, String d2) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date1 = LocalDate.parse(d1, formatter);
+        LocalDate date2 = LocalDate.parse(d2, formatter);
+
+        return date1.compareTo(date2);
     }
 }

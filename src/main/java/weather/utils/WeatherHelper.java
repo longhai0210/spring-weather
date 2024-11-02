@@ -62,8 +62,13 @@ public class WeatherHelper {
 
         for (Map<String, Object> weather : weatherData) {
             Map<String, Object> weatherDetail = new HashMap<>();
-            weatherDetail.put("temp", Math.round(((Map<String, Double>) weather.get("main")).get("temp")));
-            weatherDetail.put("icon", ((List<Map<String, Integer>>) weather.get("weather")).get(0).get("icon"));
+            if(((Map<String, Double>) weather.get("main")).get("temp") instanceof Double){
+                weatherDetail.put("temp", Math.round(((Map<String, Double>) weather.get("main")).get("temp")));
+            }
+            else {
+                weatherDetail.put("temp", Math.round(((Map<String, Integer>) weather.get("main")).get("temp")));
+            }
+            weatherDetail.put("icon", ((List<Map<String, String>>) weather.get("weather")).get(0).get("icon"));
             weatherDetail.put("time", DateTimeHelper.formatTime((String) weather.get("dt_txt"), "H:mm"));
             weatherDetail.put("amPm", DateTimeHelper.formatTime((String) weather.get("dt_txt"), "a"));
             result.add(weatherDetail);

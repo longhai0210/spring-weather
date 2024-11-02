@@ -110,6 +110,9 @@ public class WeatherController {
                 else {
                     selectedDate = dailyData.keySet().toArray()[0].toString();
                 }
+                avgWeatherList.sort((m1, m2) -> {
+                    return DateTimeHelper.sort((String) m1.get("date"), (String)m2.get("date"));
+                });
                 model.addAttribute("mainAvgInfo", WeatherHelper.avgWeather(dailyData.get(selectedDate)));
                 model.addAttribute("weathers", WeatherHelper.getWeatherDetail(dailyData.get(selectedDate)));
                 model.addAttribute("city", data.get("city"));
