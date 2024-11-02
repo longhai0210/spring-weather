@@ -104,15 +104,15 @@ public class WeatherController {
                 for (Map.Entry<String, List<Map<String, Object>>> entry : dailyData.entrySet()) {
                     avgWeatherList.add(WeatherHelper.avgWeather(entry.getValue()));
                 }
+                avgWeatherList.sort((m1, m2) -> {
+                    return DateTimeHelper.sort((String) m1.get("date"), (String)m2.get("date"));
+                });
                 if(!date.isEmpty()) {
                     selectedDate = date;
                 }
                 else {
-                    selectedDate = dailyData.keySet().toArray()[0].toString();
+                    selectedDate = avgWeatherList.get(0).get("date").toString();
                 }
-                avgWeatherList.sort((m1, m2) -> {
-                    return DateTimeHelper.sort((String) m1.get("date"), (String)m2.get("date"));
-                });
                 model.addAttribute("mainAvgInfo", WeatherHelper.avgWeather(dailyData.get(selectedDate)));
                 model.addAttribute("weathers", WeatherHelper.getWeatherDetail(dailyData.get(selectedDate)));
                 model.addAttribute("city", data.get("city"));
